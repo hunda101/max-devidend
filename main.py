@@ -2,22 +2,24 @@ def main():
     print("The author of this program is Mark Khomenko")
     print("Program calculates maximum sum of elements entered by user, which is not dividable by N,. Variant 18.")
     try:
-        N = int(input("positive integer: "))
+        N = int(input("Input positive integer N: "))
         if N <= 0:
             raise ValueError("incorrect value: must be positive integer")
         data = []
         while True:
-            a = input("input list: ").split()
+            a = input("Input numbers of list(input white line to stop): ").split()
             if not a:
                 break
             num_list = list(map(int, a))
             data.append(num_list)
-            max_divisor(data, N)
+
     except KeyboardInterrupt:
         print("\nprogram aborted")
     except (EOFError, ValueError) as e:
         print("***** error")
         print(repr(e))
+    else:
+        max_divisor(data, N)
 
 
 def _numbers_combinations(skip_index, select_index, list_num, possible_combinations, N):
@@ -28,19 +30,17 @@ def _numbers_combinations(skip_index, select_index, list_num, possible_combinati
         if i != skip_index and i != select_index:
             tmp_dict[i] = val[0]
     while sum(tmp_dict.values()) % N == 0:
-        if _search_min_delta(tmp_dict, list_num) == 0:
-            tmp_dict = {}
+        if _find_min_delta(tmp_dict, list_num) == 0:
             break
-    possible_combinations.append(tuple((tmp_dict, skip_index, sum(tmp_dict.values()))))
+    tmp_tuple = (tmp_dict, skip_index, sum(tmp_dict.values()))
+    possible_combinations.append(tmp_tuple)
 
 
-def _search_min_delta(tmp_dict, list_num):
+def _find_min_delta(tmp_dict, list_num):
     dict_sum_list = {}
     for k, v in tmp_dict.items():
         if len(list_num[k]) > 1:
             delta = list_num[k][0] - list_num[k][1]
-            if delta == 0:
-                continue
             dict_sum_list[k] = delta
     if not dict_sum_list:
         return 0
@@ -60,20 +60,26 @@ def max_divisor(data, N):
             if select_index == len(list_num):
                 select_index = 0
         max_dict = max(possible_combinations, key=lambda d: sum(d[0].values()))
-    except (IndexError, ValueError):
-        max_dict = ({None: None}, None, None)
+    except ValueError:
+        max_dict = ({}, None, None)
+    except IndexError:
+        max_dict = ({}, 0, None)
     return_result(max_dict, N, len(list_num))
 
 
-def return_result(ps, N, length):
-    print("THE WORK IS DONE,")
-    print(f"For N = {N}")
-    print(f"Number of lists: {length}")
-    print(f"List from which a number was not selected: {ps[1]}")
-    print(f"Max sum that not divisible by {N} is {ps[2]}")
+def _print_numbers(pc):
+    for k, v in pc.items():
+        print(f"list: {k}, number: {v}", end="; ")
+
+
+def return_result(ps, N, amount):
+    print("THE WORK IS DONE, ")
+    print(f"For N = {N}, ")
+    print(f"Amount of lists: {amount}, ")
+    print(f"List from which a number was not selected: {ps[1]},")
+    print(f"Max sum that is not divisible by {N} is {ps[2]}")
     print("These numbers were selected: ", end="")
-    for k, v in ps[0].items():
-        print(f"from {k} list number: {v}", end=", ")
+    _print_numbers(ps[0])
 
 
 main()
