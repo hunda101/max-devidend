@@ -29,21 +29,20 @@ def _numbers_combinations(skip_index, select_index, list_num, possible_combinati
     """
     find one max combination of numbers from lists except of one
     """
-    tmp_dict = {}
+    tmp_dict = {idx: val[0] for idx, val in enumerate(list_num) if idx not in (skip_index, select_index)}
     max_index_value = list_num[select_index][0]
     tmp_dict[select_index] = max_index_value
     is_dividable = False
     delta_index = 0
-    for i, val in enumerate(list_num):
-        if i != skip_index and i != select_index:
-            tmp_dict[i] = val[0]
+    print(tmp_dict)
     while sum(tmp_dict.values()) % N == 0:
         if _find_min_delta(tmp_dict, list_num, delta_index) == 0:
             is_dividable = True
             break
         delta_index += 1
     possible_combinations.append(
-        ({}, None, None) if is_dividable else (dict(sorted(tmp_dict.items())), skip_index, sum(tmp_dict.values())))
+        ({}, None, None) if is_dividable else (dict(sorted(tmp_dict.items())), skip_index, sum(tmp_dict.values()))
+    )
 
 
 def _find_min_delta(tmp_dict, list_num_copy, index):
