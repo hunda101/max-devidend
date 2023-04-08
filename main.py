@@ -1,4 +1,7 @@
 def main():
+    """
+    tells about the program, asks user to input N and lists of numbers
+    """
     print("The author of this program is Mark Khomenko")
     print("Program calculates maximum sum of elements entered by user, which is not dividable by N,. Variant 18.")
     try:
@@ -23,33 +26,45 @@ def main():
 
 
 def _numbers_combinations(skip_index, select_index, list_num, possible_combinations, N):
+    """
+    find one max combination of numbers from lists except of one
+    """
     tmp_dict = {}
     max_index_value = list_num[select_index][0]
     tmp_dict[select_index] = max_index_value
+    is_dividable = False
+    delta_index = 0
     for i, val in enumerate(list_num):
         if i != skip_index and i != select_index:
             tmp_dict[i] = val[0]
     while sum(tmp_dict.values()) % N == 0:
-        if _find_min_delta(tmp_dict, list_num) == 0:
+        if _find_min_delta(tmp_dict, list_num, delta_index) == 0:
+            is_dividable = True
             break
-    tmp_tuple = (tmp_dict, skip_index, sum(tmp_dict.values()))
-    possible_combinations.append(tmp_tuple)
+        delta_index += 1
+    possible_combinations.append(
+        ({}, None, None) if is_dividable else (dict(sorted(tmp_dict.items())), skip_index, sum(tmp_dict.values())))
 
 
-def _find_min_delta(tmp_dict, list_num):
+def _find_min_delta(tmp_dict, list_num_copy, index):
+    """
+    finds the best solution to choose number to get maximum sum that is not divided by N
+    """
     dict_sum_list = {}
     for k, v in tmp_dict.items():
-        if len(list_num[k]) > 1:
-            delta = list_num[k][0] - list_num[k][1]
+        if len(list_num_copy[k]) > index + 1:
+            delta = list_num_copy[k][index] - list_num_copy[k][index + 1]
             dict_sum_list[k] = delta
     if not dict_sum_list:
         return 0
     min_delta_key = min(dict_sum_list, key=dict_sum_list.get)
-    tmp_dict[min_delta_key] = list_num[min_delta_key][1]
-    list_num[min_delta_key].pop(0)
+    tmp_dict[min_delta_key] = list_num_copy[min_delta_key][index+1]
 
 
 def max_divisor(data, N):
+    """
+    finds all max combinations from lists except of one list and passes combination with maximum sum
+    """
     possible_combinations = []
     list_num = [sorted(set(lst), reverse=True) for lst in data]
     try:
