@@ -15,7 +15,6 @@ def main():
                 break
             num_list = list(map(int, lst))
             data.append(num_list)
-
     except KeyboardInterrupt:
         print("\nprogram aborted")
     except (EOFError, ValueError) as e:
@@ -25,15 +24,31 @@ def main():
         max_divisor(data, N)
 
 
-def _numbers_combinations(skip_idx, select_idx, sorted_data, possible_combinations, N):
+def max_divisor(data, N):
+    """
+    finds all max combinations from lists except of one list and passes combination with maximum sum
+    """
+    possible_combinations = []
+    sorted_data = [sorted(set(lst), reverse=True) for lst in data]
+    try:
+        for skip_idx in range(len(sorted_data)):
+            _numbers_combinations(skip_idx, sorted_data, possible_combinations, N)
+        max_combination = max(possible_combinations, key=lambda mx: sum(mx[0].values()))
+    except ValueError:
+        max_combination = ({}, None, None)
+    except IndexError:
+        max_combination = ({}, 0, None)
+    print_result(max_combination, N, len(sorted_data))
+
+
+def _numbers_combinations(skip_idx, sorted_data, possible_combinations, N):
     """
     find one max combination of numbers from lists except of one
     """
-    selected_numbers = {idx: val[0] for idx, val in enumerate(sorted_data) if idx not in (skip_idx, select_idx)}
-    max_index_value = sorted_data[select_idx][0]
-    selected_numbers[select_idx] = max_index_value
+    selected_numbers = {idx: val[0] for idx, val in enumerate(sorted_data) if idx != skip_idx}
     is_dividable = False
     delta_index = 0
+    print(selected_numbers)
     while sum(selected_numbers.values()) % N == 0:
         if _find_min_delta(selected_numbers, sorted_data, delta_index) == 0:
             is_dividable = True
@@ -41,8 +56,9 @@ def _numbers_combinations(skip_idx, select_idx, sorted_data, possible_combinatio
         delta_index += 1
     possible_combinations.append(
         ({}, None, None) if is_dividable
-        else (dict(sorted(selected_numbers.items())), skip_idx, sum(selected_numbers.values()))
+        else (selected_numbers, skip_idx, sum(selected_numbers.values()))
     )
+    print(possible_combinations)
 
 
 def _find_min_delta(selected_numbers, sorted_data, idx):
@@ -58,27 +74,6 @@ def _find_min_delta(selected_numbers, sorted_data, idx):
         return 0
     min_delta_key = min(selected_numbers_delta, key=selected_numbers_delta.get)
     selected_numbers[min_delta_key] = sorted_data[min_delta_key][idx + 1]
-
-
-def max_divisor(data, N):
-    """
-    finds all max combinations from lists except of one list and passes combination with maximum sum
-    """
-    possible_combinations = []
-    sorted_data = [sorted(set(lst), reverse=True) for lst in data]
-    try:
-        select_idx = 1
-        for skip_idx in range(len(sorted_data)):
-            _numbers_combinations(skip_idx, select_idx, sorted_data, possible_combinations, N)
-            select_idx += 1
-            if select_idx == len(sorted_data):
-                select_idx = 0
-        max_combination = max(possible_combinations, key=lambda mx: sum(mx[0].values()))
-    except ValueError:
-        max_combination = ({}, None, None)
-    except IndexError:
-        max_combination = ({}, 0, None)
-    print_result(max_combination, N, len(sorted_data))
 
 
 def _print_numbers(combination):
