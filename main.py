@@ -58,7 +58,6 @@ def _numbers_combinations(skip_idx, sorted_data, possible_combinations, N):
         ({}, None, None) if is_dividable
         else (selected_numbers, skip_idx, sum(selected_numbers.values()))
     )
-    print(possible_combinations)
 
 
 def _find_min_delta(selected_numbers, sorted_data, idx):
