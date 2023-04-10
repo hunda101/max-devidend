@@ -45,12 +45,12 @@ def _numbers_combinations(skip_idx, sorted_data, possible_combinations, N):
     """
     find one max combination of numbers from lists except of one
     """
-    selected_numbers = {idx: val[0] for idx, val in enumerate(sorted_data) if idx != skip_idx}
+    sorted_data_copy = _deep_copy(sorted_data)
+    selected_numbers = {idx: val[0] for idx, val in enumerate(sorted_data_copy) if idx != skip_idx}
     is_dividable = False
     delta_index = 0
-    print(selected_numbers)
     while sum(selected_numbers.values()) % N == 0:
-        if _find_min_delta(selected_numbers, sorted_data, delta_index) == 0:
+        if _find_min_delta(selected_numbers, sorted_data_copy) == 0:
             is_dividable = True
             break
         delta_index += 1
@@ -60,19 +60,30 @@ def _numbers_combinations(skip_idx, sorted_data, possible_combinations, N):
     )
 
 
-def _find_min_delta(selected_numbers, sorted_data, idx):
+def _find_min_delta(selected_numbers, sorted_data_copy):
     """
     finds the best solution to choose number to get maximum sum that is not divided by N
     """
     selected_numbers_delta = {}
     for k, v in selected_numbers.items():
-        if len(sorted_data[k]) > idx + 1:
-            delta = sorted_data[k][idx] - sorted_data[k][idx + 1]
+        if len(sorted_data_copy[k]) > 1:
+            delta = sorted_data_copy[k][0] - sorted_data_copy[k][1]
             selected_numbers_delta[k] = delta
     if not selected_numbers_delta:
         return 0
     min_delta_key = min(selected_numbers_delta, key=selected_numbers_delta.get)
-    selected_numbers[min_delta_key] = sorted_data[min_delta_key][idx + 1]
+    selected_numbers[min_delta_key] = sorted_data_copy[min_delta_key][1]
+    sorted_data_copy[min_delta_key].pop(0)
+
+
+def _deep_copy(lst):
+    """
+    makes deep copy of list
+    """
+    if isinstance(lst, list):
+        return [_deep_copy(val) for val in lst]
+    else:
+        return lst
 
 
 def _print_numbers(combination):
