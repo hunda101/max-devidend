@@ -3,16 +3,13 @@ def main():
     tells about the program, asks user to input N and lists of numbers
     """
     print("The author of this program is Mark Khomenko")
-    print("Program calculates maximum sum of elements entered by user, which is not dividable by N,. Variant 18.")
+    print("Program calculates maximum sum of elements entered by user, which is not is_divisible by N. Variant 18.")
     try:
         N = int(input("Input positive integer N: "))
         if N <= 0:
             raise ValueError("incorrect value: must be positive integer")
         data = []
-        while True:
-            lst = input("Input numbers of list(input white line to stop): ").split()
-            if not lst:
-                break
+        while lst := input("Input list of numbers(input white line to stop): ").split():
             num_list = list(map(int, lst))
             data.append(num_list)
     except KeyboardInterrupt:
@@ -26,7 +23,7 @@ def main():
 
 def max_divisor(data, N):
     """
-    finds all max combinations from lists except of one list and passes combination with maximum sum
+    finds all max combinations from lists except of one list and passes combination with maximum sum of numbers
     """
     possible_combinations = []
     sorted_data = [sorted(set(lst), reverse=True) for lst in data]
@@ -45,35 +42,60 @@ def _numbers_combinations(skip_idx, sorted_data, possible_combinations, N):
     """
     find one max combination of numbers from lists except of one
     """
-    sorted_data_copy = _deep_copy(sorted_data)
-    selected_numbers = {idx: val[0] for idx, val in enumerate(sorted_data_copy) if idx != skip_idx}
-    is_dividable = False
-    delta_index = 0
-    while sum(selected_numbers.values()) % N == 0:
-        if _find_min_delta(selected_numbers, sorted_data_copy) == 0:
-            is_dividable = True
-            break
-        delta_index += 1
+    selected_numbers = {idx: val[0] for idx, val in enumerate(sorted_data) if idx != skip_idx}
+    stack = [0 if idx != skip_idx else -1 for idx in range(len(sorted_data))]
+    lenStack = [len(v) for k, v in enumerate(sorted_data)]
+    max_stack = [v - 1 if idx != skip_idx else -1 for idx, v in enumerate(lenStack)]
+    is_divisible = False
+    if sum(selected_numbers.values()) % N == 0:
+        if non_divisible_sum(stack, lenStack, max_stack, skip_idx, sorted_data, selected_numbers, N) == 0:
+            is_divisible = True
     possible_combinations.append(
-        ({}, None, None) if is_dividable
+        ({}, None, None) if is_divisible
         else (selected_numbers, skip_idx, sum(selected_numbers.values()))
     )
 
 
-def _find_min_delta(selected_numbers, sorted_data_copy):
+def non_divisible_sum(stack, lenStack, max_stack, skip_idx, sorted_data, selected_numbers, N):
     """
-    finds the best solution to choose number to get maximum sum that is not divided by N
+    finds non-divisible combination by given stack
+
+    if there are no non-divisible combination, it returns 0
     """
-    selected_numbers_delta = {}
-    for k, v in selected_numbers.items():
-        if len(sorted_data_copy[k]) > 1:
-            delta = sorted_data_copy[k][0] - sorted_data_copy[k][1]
-            selected_numbers_delta[k] = delta
-    if not selected_numbers_delta:
+    max_sum = [(0, [])]
+    while index_list := _generate_index_combinations(stack, lenStack, max_stack, skip_idx):
+        idx = _deep_copy(index_list)
+        sum1 = 0
+        for i, val in enumerate(index_list):
+            if index_list[i] == -1:
+                continue
+            sum1 += sorted_data[i][val]
+        if sum1 % N != 0 and (sum1 > max_sum[0][0] or sum1 < -max_sum[0][0]):
+            max_sum[0] = (sum1, idx)
+    if not max_sum[0][1]:
         return 0
-    min_delta_key = min(selected_numbers_delta, key=selected_numbers_delta.get)
-    selected_numbers[min_delta_key] = sorted_data_copy[min_delta_key][1]
-    sorted_data_copy[min_delta_key].pop(0)
+    for idx, val in enumerate(max_sum[0][1]):
+        if val == -1:
+            continue
+        selected_numbers[idx] = sorted_data[idx][val]
+
+
+def _generate_index_combinations(stack, lenStack, max_stack, skip_idx):
+    """
+    generates all combination
+    """
+    n = len(stack)
+    for i in range(n - 1, -1, -1):
+        if i == skip_idx:
+            continue
+        stack[i] += 1
+        if stack[i] > lenStack[i] - 1:
+            stack[i] = 0
+        else:
+            break
+    if stack == max_stack:
+        return None
+    return stack
 
 
 def _deep_copy(lst):
@@ -81,7 +103,11 @@ def _deep_copy(lst):
     makes deep copy of list
     """
     if isinstance(lst, list):
-        return [_deep_copy(val) for val in lst]
+        copy_lst = []
+        for val in lst:
+            copy_val = _deep_copy(val)
+            copy_lst.append(copy_val)
+        return copy_lst
     else:
         return lst
 
@@ -91,20 +117,20 @@ def _print_numbers(combination):
     prints from which list number was selected and the number itself
     """
     for k, v in combination.items():
-        print(f"list: {k}, number: {v}", end="; ")
+        print(k, v)
 
 
 def print_result(max_combination, N, amount):
     """
     prints the result of program
     """
-    print("THE WORK IS DONE, ")
-    print(f"For N = {N}, ")
-    print(f"Amount of lists: {amount}, ")
-    print(f"List from which a number was not selected: {max_combination[1]},")
-    print(f"Max sum that is not divisible by {N} is {max_combination[2]}")
-    print("These numbers were selected: ", end="")
+    print("THE WORK IS DONE")
+    print(N)
+    print(amount)
+    print(max_combination[1])
+    print(max_combination[2])
     _print_numbers(max_combination[0])
 
 
-main()
+if __name__ == "__main__":
+    main()
