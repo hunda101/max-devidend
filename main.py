@@ -28,6 +28,8 @@ def max_divisor(data, N):
     possible_combinations = []
     sorted_data = [sorted(set(lst), reverse=True) for lst in data]
     try:
+        if len(sorted_data) == 1:
+            raise IndexError
         for skip_idx in range(len(sorted_data)):
             _numbers_combinations(skip_idx, sorted_data, possible_combinations, N)
         max_combination = max(possible_combinations, key=lambda mx: sum(mx[0].values()))
@@ -43,12 +45,12 @@ def _numbers_combinations(skip_idx, sorted_data, possible_combinations, N):
     find one max combination of numbers from lists except of one
     """
     selected_numbers = {idx: val[0] for idx, val in enumerate(sorted_data) if idx != skip_idx}
-    stack = [0 if idx != skip_idx else -1 for idx in range(len(sorted_data))]
-    lenStack = [len(v) for k, v in enumerate(sorted_data)]
-    max_stack = [v - 1 if idx != skip_idx else -1 for idx, v in enumerate(lenStack)]
     is_divisible = False
     if sum(selected_numbers.values()) % N == 0:
-        if non_divisible_sum(stack, lenStack, max_stack, skip_idx, sorted_data, selected_numbers, N) == 0:
+        stack = [0 if idx != skip_idx else -1 for idx in range(len(sorted_data))]
+        len_stack = [len(v) for k, v in enumerate(sorted_data)]
+        max_stack = [v - 1 if idx != skip_idx else -1 for idx, v in enumerate(len_stack)]
+        if non_divisible_sum(stack, len_stack, max_stack, skip_idx, sorted_data, selected_numbers, N) == 0:
             is_divisible = True
     possible_combinations.append(
         ({}, None, None) if is_divisible
@@ -56,31 +58,31 @@ def _numbers_combinations(skip_idx, sorted_data, possible_combinations, N):
     )
 
 
-def non_divisible_sum(stack, lenStack, max_stack, skip_idx, sorted_data, selected_numbers, N):
+def non_divisible_sum(stack, len_stack, max_stack, skip_idx, sorted_data, selected_numbers, N):
     """
     finds non-divisible combination by given stack
 
     if there are no non-divisible combination, it returns 0
     """
-    max_sum = [(0, [])]
-    while index_list := _generate_index_combinations(stack, lenStack, max_stack, skip_idx):
+    max_sum = (-float('inf'), [])
+    while index_list := _generate_index_combinations(stack, len_stack, max_stack, skip_idx):
         idx = _deep_copy(index_list)
-        sum1 = 0
+        curr_sum = 0
         for i, val in enumerate(index_list):
-            if index_list[i] == -1:
+            if i == skip_idx:
                 continue
-            sum1 += sorted_data[i][val]
-        if sum1 % N != 0 and (sum1 > max_sum[0][0] or sum1 < -max_sum[0][0]):
-            max_sum[0] = (sum1, idx)
-    if not max_sum[0][1]:
+            curr_sum += sorted_data[i][val]
+        if curr_sum % N != 0 and curr_sum > max_sum[0]:
+            max_sum = (curr_sum, idx)
+    if not max_sum[1]:
         return 0
-    for idx, val in enumerate(max_sum[0][1]):
-        if val == -1:
+    for idx, val in enumerate(max_sum[1]):
+        if idx == skip_idx:
             continue
         selected_numbers[idx] = sorted_data[idx][val]
 
 
-def _generate_index_combinations(stack, lenStack, max_stack, skip_idx):
+def _generate_index_combinations(stack, len_stack, max_stack, skip_idx):
     """
     generates all combination
     """
@@ -89,7 +91,7 @@ def _generate_index_combinations(stack, lenStack, max_stack, skip_idx):
         if i == skip_idx:
             continue
         stack[i] += 1
-        if stack[i] > lenStack[i] - 1:
+        if stack[i] > len_stack[i] - 1:
             stack[i] = 0
         else:
             break
@@ -132,5 +134,4 @@ def print_result(max_combination, N, amount):
     _print_numbers(max_combination[0])
 
 
-if __name__ == "__main__":
-    main()
+#main()
