@@ -3,7 +3,7 @@ def main():
     tells about the program, asks user to input N and lists of numbers
     """
     print("The author of this program is Mark Khomenko")
-    print("Program calculates maximum sum of elements entered by user, which is not is_divisible by N. Variant 18.")
+    print("Program calculates maximum sum of elements entered by user, which is not divisible by N. Variant 18.")
     try:
         N = int(input("Input positive integer N: "))
         if N <= 0:
@@ -26,18 +26,19 @@ def max_divisor(data, N):
     finds all max combinations from lists except of one list and passes combination with maximum sum of numbers
     """
     possible_combinations = []
-    sorted_data = [sorted(set(lst), reverse=True) for lst in data]
+    for lst in data:
+        lst.sort(reverse=True)
     try:
-        if len(sorted_data) == 1:
+        if len(data) == 1:
             raise IndexError
-        for skip_idx in range(len(sorted_data)):
-            _numbers_combinations(skip_idx, sorted_data, possible_combinations, N)
+        for skip_idx in range(len(data)):
+            _numbers_combinations(skip_idx, data, possible_combinations, N)
         max_combination = max(possible_combinations, key=lambda mx: sum(mx[0].values()))
     except ValueError:
         max_combination = ({}, None, None)
     except IndexError:
         max_combination = ({}, 0, None)
-    print_result(max_combination, N, len(sorted_data))
+    print_result(max_combination, N, len(data))
 
 
 def _numbers_combinations(skip_idx, sorted_data, possible_combinations, N):
@@ -66,14 +67,14 @@ def non_divisible_sum(stack, len_stack, max_stack, skip_idx, sorted_data, select
     """
     max_sum = (-float('inf'), [])
     while index_list := _generate_index_combinations(stack, len_stack, max_stack, skip_idx):
-        idx = _deep_copy(index_list)
         curr_sum = 0
         for i, val in enumerate(index_list):
             if i == skip_idx:
                 continue
             curr_sum += sorted_data[i][val]
         if curr_sum % N != 0 and curr_sum > max_sum[0]:
-            max_sum = (curr_sum, idx)
+            index_list_copy = _deep_copy(index_list)
+            max_sum = (curr_sum, index_list_copy)
     if not max_sum[1]:
         return 0
     for idx, val in enumerate(max_sum[1]):
@@ -133,5 +134,4 @@ def print_result(max_combination, N, amount):
     print(max_combination[2])
     _print_numbers(max_combination[0])
 
-
-#main()
+main()
